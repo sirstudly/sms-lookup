@@ -8,11 +8,11 @@
 		<version>2.6.3</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.example</groupId>
-	<artifactId>spring-boot-complete</artifactId>
+	<groupId>com.macbackpackers</groupId>
+	<artifactId>sms-lookup</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>spring-boot-complete</name>
-	<description>Demo project for Spring Boot</description>
+	<name>sms-lookup</name>
+	<description>Lookup SMS from external source</description>
 
 	<properties>
 		<java.version>1.8</java.version>
