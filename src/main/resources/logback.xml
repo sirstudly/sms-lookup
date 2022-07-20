@@ -1,0 +1,42 @@
+
+<configuration>
+
+    <property name="USER_HOME" value="logs" />
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36}:%line - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="BY-FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${USER_HOME}/smslookup.log</file>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss} %mdc %level - %msg%n</Pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+            <FileNamePattern>${USER_HOME}/smslookup.%i.log.zip</FileNamePattern>
+            <MinIndex>1</MinIndex>
+            <MaxIndex>10</MaxIndex>
+        </rollingPolicy>
+        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+            <MaxFileSize>50MB</MaxFileSize>
+        </triggeringPolicy>
+    </appender>
+
+    <logger name="com.gargoylesoftware.htmlunit" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="BY-FILE" />
+    </logger>
+
+    <logger name="com.macbackpackers" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="BY-FILE" />
+    </logger>
+    
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="BY-FILE" />
+    </root>
+</configuration>
