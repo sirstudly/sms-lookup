@@ -13,6 +13,9 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage;
 import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
 import com.macbackpackers.beans.ModemConfigProperties;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
@@ -62,6 +65,21 @@ public class Application {
             }
         });
         return webClient;
+    }
+
+    @Bean
+    public GenericObjectPoolConfig getWebDriverPoolConfig() {
+        GenericObjectPoolConfig config = new GenericObjectPoolConfig<>();
+        config.setJmxEnabled(false);
+        return config;
+    }
+
+    @Bean
+    public GenericObjectPool<WebDriver> getWebDriverPool(WebDriverFactory driverFactory, GenericObjectPoolConfig config) {
+        GenericObjectPool<WebDriver> objectPool = new GenericObjectPool<>( driverFactory, config);
+        objectPool.setBlockWhenExhausted( true );
+        objectPool.setMaxTotal( 1 ); // only keep one around for now
+        return objectPool;
     }
 
     @Bean

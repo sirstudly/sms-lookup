@@ -31,7 +31,7 @@ public class SmsLookupController {
         catch (ApplicationNotSupportedException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
         }
-        catch (IOException ex) {
+        catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), ex);
         }
     }
