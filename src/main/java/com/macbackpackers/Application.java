@@ -1,31 +1,26 @@
 package com.macbackpackers;
 
 import com.gargoylesoftware.htmlunit.BrowserVersion;
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.gargoylesoftware.htmlunit.NicelyResynchronizingAjaxController;
-import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.WebClient;
-import com.gargoylesoftware.htmlunit.WebRequest;
 import com.gargoylesoftware.htmlunit.WebWindowEvent;
 import com.gargoylesoftware.htmlunit.WebWindowListener;
-import com.gargoylesoftware.htmlunit.html.HtmlDivision;
-import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.gargoylesoftware.htmlunit.html.HtmlTextInput;
-import com.macbackpackers.beans.ModemConfigProperties;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import com.macbackpackers.services.NgrokLookupService;
+import com.mysql.cj.jdbc.MysqlDataSource;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.Arrays;
 
@@ -83,6 +78,18 @@ public class Application {
     }
 
     @Bean
+    public DataSource getDataSource(
+            @Value("${db.url}") String url,
+            @Value("${db.username}") String username,
+            @Value("${db.password}") String password) {
+        MysqlDataSource ds = new MysqlDataSource();
+        ds.setURL(url);
+        ds.setUser(username);
+        ds.setPassword(password);
+        return ds;
+    }
+
+    @Bean
     public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
         return args -> {
 
@@ -94,9 +101,10 @@ public class Application {
                 LOGGER.info(beanName);
             }
 
-
+            // Ngrok needs to be running; update the public endpoint on startup
+            NgrokLookupService ngrokService = ctx.getBean(NgrokLookupService.class);
+            ngrokService.updatePublicEndpoint();
 //            ((ConfigurableApplicationContext) ctx).close();
-
         };
     }
 }
