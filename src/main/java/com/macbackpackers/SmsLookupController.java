@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.macbackpackers.beans.Last2faCode;
 import com.macbackpackers.exceptions.ApplicationNotSupportedException;
-import com.macbackpackers.services.SmsLookupService;
+import com.macbackpackers.services.HuaweiCpeProService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,14 +24,14 @@ import java.util.Arrays;
 public class SmsLookupController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
-    private final SmsLookupService service;
+    private final HuaweiCpeProService service;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     @Value("${controller.allowedRemoteIpAddresses:}")
     private String allowedRemoteIpAddresses;
 
     @Autowired
-    public SmsLookupController(SmsLookupService service) {
+    public SmsLookupController(HuaweiCpeProService service) {
         this.service = service;
     }
 
@@ -46,6 +46,20 @@ public class SmsLookupController {
         }
         catch (ApplicationNotSupportedException ex) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
+        }
+        catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), ex);
+        }
+    }
+
+    @GetMapping(value = "/restartModem", produces = MediaType.APPLICATION_JSON_VALUE)
+    public String restartModem(HttpServletRequest request) {
+        try {
+            authorize(StringUtils.defaultString(request.getHeader("x-forwarded-for"), request.getRemoteAddr()));
+            service.restartModem();
+            String response = "{ status: \"ok\" }";
+            LOGGER.info("Returning response :" + response);
+            return response;
         }
         catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, ex.getMessage(), ex);

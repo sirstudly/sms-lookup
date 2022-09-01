@@ -1,8 +1,7 @@
 package com.macbackpackers.beans;
 
-public class Last2faCode {
+public abstract class Last2faCode {
     private String message;
-    private String otp;
     private String date;
 
     public String getMessage() {
@@ -13,14 +12,6 @@ public class Last2faCode {
         this.message = message;
     }
 
-    public String getOtp() {
-        return otp;
-    }
-
-    public void setOtp(String otp) {
-        this.otp = otp;
-    }
-
     public String getDate() {
         return date;
     }
@@ -28,4 +19,6 @@ public class Last2faCode {
     public void setDate(String date) {
         this.date = date;
     }
+
+    public abstract String getOtp();
 }

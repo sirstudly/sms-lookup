@@ -23,11 +23,10 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.stalenessOf;
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOfElementLocated;
 
 /**
- * Singleton service class for looking up SMS content. Has a WebClient so once a method completes,
- * there should be no state left in the browser.
+ * Singleton service class for accessing the web configuration tool for the Huawei CPE Pro.
  */
 @Service
-public class SmsLookupService {
+public class HuaweiCpeProService {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final ModemConfigProperties props;
@@ -38,7 +37,7 @@ public class SmsLookupService {
     private static final int MAX_WAIT_SECONDS = 60;
 
     @Autowired
-    public SmsLookupService(ModemConfigProperties props, WebClient webClient, GenericObjectPool<WebDriver> driverFactory) {
+    public HuaweiCpeProService(ModemConfigProperties props, WebClient webClient, GenericObjectPool<WebDriver> driverFactory) {
         this.props = props;
         this.webClient = webClient;
         this.driverFactory = driverFactory;
@@ -48,18 +47,8 @@ public class SmsLookupService {
         WebDriver driver = driverFactory.borrowObject();
         try {
             WebDriverWait wait = new WebDriverWait(driver, MAX_WAIT_SECONDS);
-            LOGGER.info(ToStringBuilder.reflectionToString(props));
+            doLogin(driver, wait);
 
-            driver.get(props.getUrl());
-
-            WebElement passwordField = findElement(wait, By.id("login_password"));
-            passwordField.sendKeys(props.getPassword());
-
-            WebElement loginButton = findElement(wait, By.id("login_btn"));
-            loginButton.click();
-            wait.until( d -> stalenessOf( loginButton ).apply(d) );
-
-            LOGGER.info("CURRENTLY ON " + driver.getCurrentUrl());
             driver.get(StringUtils.stripEnd(props.getUrl(), "/") + "/html/content.html#sms");
             findElement(wait, By.id("sms_display"));
 
@@ -93,6 +82,35 @@ public class SmsLookupService {
             driverFactory.returnObject(driver);
         }
         return null;
+    }
+
+    public synchronized void restartModem() throws Exception {
+        WebDriver driver = driverFactory.borrowObject();
+        try {
+            WebDriverWait wait = new WebDriverWait(driver, MAX_WAIT_SECONDS);
+            doLogin(driver, wait);
+
+            WebElement restartButton = findElement(wait, By.xpath("//div[@lang-id='public.reboot']"));
+            restartButton.click();
+
+            WebElement continueButton = findElement(wait, By.xpath("//div[@id='submit_light']/div/div/div[text()='Continue']"));
+            continueButton.click();
+        }
+        finally {
+            driverFactory.returnObject(driver);
+        }
+    }
+
+    private void doLogin(WebDriver driver, WebDriverWait wait) {
+        driver.get(props.getUrl());
+
+        WebElement passwordField = findElement(wait, By.id("login_password"));
+        passwordField.sendKeys(props.getPassword());
+
+        WebElement loginButton = findElement(wait, By.id("login_btn"));
+        loginButton.click();
+        wait.until(d -> stalenessOf( loginButton ).apply(d) );
+        LOGGER.info("Current URL: " + driver.getCurrentUrl());
     }
 
     private void sleep(int seconds) {

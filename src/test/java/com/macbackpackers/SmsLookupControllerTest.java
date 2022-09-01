@@ -1,4 +1,4 @@
-package com.macbackpackers.services;
+package com.macbackpackers;
 
 import com.macbackpackers.Application;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(classes= {Application.class})
-public class SmsLookupServiceTest {
+public class SmsLookupControllerTest {
 
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
@@ -20,10 +20,14 @@ public class SmsLookupServiceTest {
     private TestRestTemplate template;
 
     @Test
-    public void getLast2faCloudbeds() throws Exception {
+    public void getLast2faCloudbeds() {
         ResponseEntity<String> response = template.getForEntity("/last2fa/cloudbeds", String.class);
         LOGGER.info(response.getBody());
     }
 
-
+    @Test
+    public void restartModem() {
+        ResponseEntity<String> response = template.getForEntity("/restartModem", String.class);
+        LOGGER.info(response.getBody());
+    }
 }
