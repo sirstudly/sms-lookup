@@ -38,7 +38,7 @@ public class NgrokLookupService {
                 LOGGER.error("Unable to find ngrok endpoint on " + statusUrl);
                 throw new IllegalStateException("Unable to find ngrok endpoint on " + statusUrl);
             }
-            dbService.updateOption("sms_lookup_url", url.getText());
+            dbService.updateOption("hbo_sms_lookup_url", url.getText());
         }
         finally {
             driverFactory.returnObject(driver);
