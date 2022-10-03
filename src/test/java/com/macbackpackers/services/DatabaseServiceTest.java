@@ -15,6 +15,6 @@ public class DatabaseServiceTest {
 
     @Test
     public void testUpdateOption() {
-        db.updateOption("sms_lookup_url", "http://localhost:8080/smslookup");
+        db.updateOption("hbo_sms_lookup_url", "http://localhost:8080/smslookup");
     }
 }
