@@ -1,6 +1,5 @@
 package com.macbackpackers;
 
-import com.macbackpackers.Application;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +21,12 @@ public class SmsLookupControllerTest {
     @Test
     public void getLast2faCloudbeds() {
         ResponseEntity<String> response = template.getForEntity("/last2fa/cloudbeds", String.class);
+        LOGGER.info(response.getBody());
+    }
+
+    @Test
+    public void getLast2faBookingDotCom() {
+        ResponseEntity<String> response = template.getForEntity("/last2fa/bdc", String.class);
         LOGGER.info(response.getBody());
     }
 

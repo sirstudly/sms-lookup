@@ -1,11 +1,8 @@
 package com.macbackpackers.services;
 
-import com.gargoylesoftware.htmlunit.WebClient;
-import com.macbackpackers.beans.Cloudbeds2faCode;
 import com.macbackpackers.beans.Last2faCode;
 import com.macbackpackers.beans.ModemConfigProperties;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -30,16 +27,14 @@ public class HuaweiCpeProService {
     private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final ModemConfigProperties props;
-    private final WebClient webClient;
     private final GenericObjectPool<WebDriver> driverFactory;
 
     /** maximum time to wait when navigating web requests */
     private static final int MAX_WAIT_SECONDS = 60;
 
     @Autowired
-    public HuaweiCpeProService(ModemConfigProperties props, WebClient webClient, GenericObjectPool<WebDriver> driverFactory) {
+    public HuaweiCpeProService(ModemConfigProperties props, GenericObjectPool<WebDriver> driverFactory) {
         this.props = props;
-        this.webClient = webClient;
         this.driverFactory = driverFactory;
     }
 
@@ -52,35 +47,41 @@ public class HuaweiCpeProService {
             driver.get(StringUtils.stripEnd(props.getUrl(), "/") + "/html/content.html#sms");
             findElement(wait, By.id("sms_display"));
 
-            if("cloudbeds".equalsIgnoreCase(application)) {
-                By byCloudbeds = By.xpath( "//div[text()='62884']" );
-                findElement(wait, byCloudbeds);
-                List<WebElement> cloudbedsMessages = driver.findElements( byCloudbeds );
-                if (cloudbedsMessages.size() > 0) {
-                    cloudbedsMessages.get(0).click();
-                    wait.until(d -> invisibilityOf(cloudbedsMessages.get(0)));
-                    sleep(5); // wait until scroll completes
-
-                    String lastDate = null;
-                    String lastData = null;
-                    for(WebElement elem : driver.findElements(By.xpath("//div[contains(@class,'color_descroption_gray')]"))) {
-                        List<WebElement> tables = elem.findElements(By.xpath("./following-sibling::table"));
-                        if(tables.size() > 0) {
-                            lastDate = StringUtils.trim(elem.getText());
-                            lastData = StringUtils.trim(tables.get(0).getText());
-                            LOGGER.info("Found record {} on {}.", lastData, lastDate);
-                        }
-                    }
-                    return new Cloudbeds2faCode(lastData, lastDate);
-                }
-                else {
-                    LOGGER.info("No messages from Cloudbeds....");
-                }
+            if ("cloudbeds".equalsIgnoreCase(application)) {
+                return getLast2faCode(driver, wait, "62884");
             }
+            else if ("bdc".equalsIgnoreCase(application)) {
+                return getLast2faCode(driver, wait, "Booking.com");
+            }
+            throw new UnsupportedOperationException("Unsupported app " + application);
         }
         finally {
             driverFactory.returnObject(driver);
         }
+    }
+
+    private Last2faCode getLast2faCode(WebDriver driver, WebDriverWait wait, String smsFrom) {
+        By by = By.xpath("//div[text()='" + smsFrom + "']");
+        findElement(wait, by);
+        List<WebElement> messages = driver.findElements(by);
+        if (messages.size() > 0) {
+            messages.get(0).click();
+            wait.until(d -> invisibilityOf(messages.get(0)));
+            sleep(5); // wait until scroll completes
+
+            String lastDate = null;
+            String lastData = null;
+            for (WebElement elem : driver.findElements(By.xpath("//div[contains(@class,'color_descroption_gray')]"))) {
+                List<WebElement> tables = elem.findElements(By.xpath("./following-sibling::table"));
+                if (tables.size() > 0) {
+                    lastDate = StringUtils.trim(elem.getText());
+                    lastData = StringUtils.trim(tables.get(0).getText());
+                    LOGGER.info("Found record {} on {}.", lastData, lastDate);
+                }
+            }
+            return new Last2faCode(lastData, lastDate);
+        }
+        LOGGER.info("No messages from " + smsFrom + "....");
         return null;
     }
 
