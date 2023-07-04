@@ -44,9 +44,9 @@ public class WebDriverFactory extends BasePooledObjectFactory<WebDriver> {
 
         // enable performance logging
         // https://stackoverflow.com/a/39979509
-        LoggingPreferences logPrefs = new LoggingPreferences();
-        logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
-        options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
+//        LoggingPreferences logPrefs = new LoggingPreferences();
+//        logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+//        options.setCapability(CapabilityType.LOGGING_PREFS, logPrefs);
 
         ChromeDriver driver = new ChromeDriver(options);
 
